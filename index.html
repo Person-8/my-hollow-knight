@@ -244,3 +244,47 @@
     setTimeout(generateFreshSave, 2000);
 })();
 </script>
+<!-- Interactive Save Configuration Extension -->
+<div style="position: fixed; top: 10px; left: 10px; z-index: 99999;">
+    <button id="injectBtn" style="padding: 10px 14px; background: #238636; color: #fff; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+        Initialize Save Slot 1
+    </button>
+</div>
+
+<script>
+document.getElementById('injectBtn').addEventListener('click', function() {
+    if (!window.indexedDB) {
+        alert("IndexedDB data directory not supported by this browser setup.");
+        return;
+    }
+    
+    var dbRequest = indexedDB.open("/idbfs", 1);
+    dbRequest.onsuccess = function(event) {
+        var db = event.target.result;
+        try {
+            var tx = db.transaction(["FILE_DATA"], "readwrite");
+            var store = tx.objectStore("FILE_DATA");
+            var targetPath = "/home/webuser/.config/unity3d/Team Cherry/Hollow Knight/user1.dat";
+            
+            // Build valid initialization data array mapping structural save bounds
+            var freshBuffer = new Uint8Array([123, 125]); // Default JSON structure bytes '{}'
+            var payload = {
+                contents: freshBuffer,
+                timestamp: Date.now()
+            };
+
+            store.put(payload, targetPath);
+            tx.oncomplete = function() {
+                alert("Storage directory initialized! Please refresh your browser tab to open Save Slot 1.");
+            };
+        } catch(error) {
+            alert("Storage vault access restricted by system policy: " + error.message);
+        }
+    };
+    
+    dbRequest.onerror = function() {
+        alert("Unable to open the internal database link.");
+    };
+});
+</script>
+
