@@ -213,3 +213,34 @@
 </body>
 
 </html>
+<!-- Automated Save File Generator Hook -->
+<script>
+(function() {
+    function generateFreshSave() {
+        if (!window.indexedDB) return;
+        var request = indexedDB.open("/idbfs", 1);
+        request.onsuccess = function(e) {
+            var db = e.target.result;
+            try {
+                var transaction = db.transaction(["FILE_DATA"], "readwrite");
+                var store = transaction.objectStore("FILE_DATA");
+                
+                // Triggers Unity to auto-generate a fresh data structure on load
+                var configPath = "/home/webuser/.config/unity3d/Team Cherry/Hollow Knight/user1.dat";
+                var mockData = {
+                    contents: new Uint8Array([123, 125]), // Minimal valid JSON byte array {}
+                    timestamp: Date.now()
+                };
+
+                store.put(mockData, configPath);
+                transaction.oncomplete = function() {
+                    console.log("Save directory initialized successfully.");
+                };
+            } catch(err) {
+                console.error("Directory build paused: ", err);
+            }
+        };
+    }
+    setTimeout(generateFreshSave, 2000);
+})();
+</script>
